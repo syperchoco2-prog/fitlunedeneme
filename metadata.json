@@ -1,0 +1,5 @@
+{
+  "name": "Kalori & Su Takibi",
+  "description": "Modern, emoji destekli kalori ve su takip uygulaması tasarımı.",
+  "requestFramePermissions": ["camera"]
+}
