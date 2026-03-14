@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Flame, Activity, User, Plus, X, Camera, Barcode } from 'lucide-react';
+import { Home, Flame, Dumbbell, BookOpen, Plus, X, Camera, Barcode } from 'lucide-react';
+import BeslenmeView from './components/BeslenmeView';
 import { AppProvider } from './context/AppContext';
 import HomeView from './components/HomeView';
 import CaloriesView from './components/CaloriesView';
@@ -17,17 +18,19 @@ const NavItem = ({
   label,
   active,
   onClick,
+  iconStyle,
 }: {
   icon: any;
   label: string;
   active: boolean;
   onClick: () => void;
+  iconStyle?: React.CSSProperties;
 }) => (
   <button
     onClick={onClick}
     className="flex w-14 flex-col items-center justify-center gap-1 outline-none focus:outline-none [-webkit-tap-highlight-color:transparent] group"
   >
-    <div className={`transition-all duration-300 ${active ? 'scale-110 text-emerald-500' : 'text-zinc-400'}`}>
+    <div className={`transition-all duration-300 ${active ? 'scale-110 text-emerald-500' : 'text-zinc-400'}`} style={iconStyle}>
       <Icon size={24} strokeWidth={active ? 2.5 : 2} />
     </div>
     <span className={`mt-1 text-[10px] font-medium tracking-wide ${active ? 'text-emerald-500' : 'text-zinc-400'}`}>
@@ -196,7 +199,9 @@ function AppContent() {
           />
         );
       case 'activity':
-        return <ActivityView />;
+        return <ActivityView />
+      case 'beslenme':
+        return <BeslenmeView />;
       case 'profile':
         return <ProfileView />;
       default:
@@ -205,9 +210,10 @@ function AppContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-200 dark:bg-zinc-950 font-sans selection:bg-emerald-100 transition-colors">
-      <div className="relative flex h-[850px] max-h-[100dvh] w-full max-w-[400px] flex-col overflow-hidden bg-zinc-50 dark:bg-zinc-950 shadow-2xl sm:rounded-[3rem] sm:border-[12px] border-zinc-900 dark:border-zinc-800 transition-colors">
-        <div className="flex-1 overflow-x-hidden overflow-y-auto bg-zinc-50 dark:bg-zinc-950 scrollbar-hide transition-colors">
+    <div className="flex min-h-screen items-center justify-center font-sans selection:bg-emerald-100 transition-colors">
+      <div className="relative flex h-[850px] max-h-[100dvh] w-full max-w-[400px] flex-col overflow-hidden bg-transparent shadow-2xl sm:rounded-[3rem] sm:border-[12px] border-zinc-900/10 dark:border-zinc-800 transition-colors">
+        <div className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent scrollbar-hide transition-colors">
+
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -222,7 +228,7 @@ function AppContent() {
           </AnimatePresence>
         </div>
 
-        <div className="absolute bottom-0 z-20 flex h-[90px] w-full items-center justify-between border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 pb-6 pt-2 transition-colors">
+        <div className="absolute bottom-0 z-20 flex w-full items-center justify-between border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 pt-3 transition-colors" style={{ paddingBottom: 'max(10px, env(safe-area-inset-bottom))' }}>
           <NavItem icon={Home} label="Ana Sayfa" active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
           <NavItem icon={Flame} label="Kalori" active={activeTab === 'calories'} onClick={() => setActiveTab('calories')} />
 
@@ -236,8 +242,8 @@ function AppContent() {
             </motion.button>
           </div>
 
-          <NavItem icon={Activity} label="Egzersiz" active={activeTab === 'activity'} onClick={() => setActiveTab('activity')} />
-          <NavItem icon={User} label="Profil" active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+          <NavItem icon={Dumbbell} label="Egzersiz" active={activeTab === 'activity'} onClick={() => setActiveTab('activity')} iconStyle={{ transform: 'rotate(90deg)' }} />
+          <NavItem icon={BookOpen} label="Beslenme" active={activeTab === 'beslenme'} onClick={() => setActiveTab('beslenme')} />
         </div>
 
         <AddMealModal

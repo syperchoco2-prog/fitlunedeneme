@@ -30,6 +30,7 @@ type ScanPhase = 'scan' | 'loading' | 'review';
 
 const MEAL_OPTIONS = ['Kahvaltı', 'Öğle Yemeği', 'Akşam Yemeği', 'Atıştırmalık'] as const;
 const HOLD_MS = 900;
+const ACI_BAKLA_LABEL = 'Acı bakla';
 
 const CARD_META = [
   { key: 'energyKcal',   label: 'Enerji',       unit: 'kcal', style: 'border-emerald-100 bg-emerald-50 text-emerald-700' },
@@ -41,6 +42,19 @@ const CARD_META = [
   { key: 'fiber',        label: 'Lif',            unit: 'g',    style: 'border-lime-100 bg-lime-50 text-lime-700' },
   { key: 'salt',         label: 'Tuz',            unit: 'g',    style: 'border-cyan-100 bg-cyan-50 text-cyan-700' },
 ] as const;
+
+function normalizeAllergenLabel(allergen: string): string {
+  if (allergen === 'Lupine' || allergen === 'Lupin') {
+    return ACI_BAKLA_LABEL;
+  }
+
+  return allergen;
+}
+
+function resolveAllergenStyleKey(allergen: string): string {
+  const normalized = normalizeAllergenLabel(allergen);
+  return normalized === ACI_BAKLA_LABEL ? 'Lupine' : normalized;
+}
 
 // Alt bileşenler
 
@@ -911,14 +925,19 @@ function LookupBarcodeScannerModal({ open, onClose }: BarcodeScannerModalProps) 
                   {product.allergens && product.allergens.length > 0 && (
                     <Accordion icon={<AlertTriangle size={14} className="text-amber-500" />} title="Alerjenler">
                       <div className="flex flex-wrap gap-2">
-                        {product.allergens.map((allergen) => (
-                          <span
-                            key={allergen}
-                            className={`inline-flex items-center rounded-xl border px-3 py-1.5 text-xs font-bold ${ALLERGEN_CHIP_STYLE[allergen] ?? DEFAULT_ALLERGEN_CHIP}`}
-                          >
-                            {allergen}
-                          </span>
-                        ))}
+                        {product.allergens.map((allergen) => {
+                          const normalizedAllergen = normalizeAllergenLabel(allergen);
+                          const styleKey = resolveAllergenStyleKey(allergen);
+
+                          return (
+                            <span
+                              key={`${allergen}-${styleKey}`}
+                              className={`inline-flex items-center rounded-xl border px-3 py-1.5 text-xs font-bold ${ALLERGEN_CHIP_STYLE[styleKey] ?? DEFAULT_ALLERGEN_CHIP}`}
+                            >
+                              {normalizedAllergen}
+                            </span>
+                          );
+                        })}
                       </div>
                     </Accordion>
                   )}

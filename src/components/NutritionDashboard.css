@@ -1,0 +1,197 @@
+.dashboard-container {
+  width: 100%;
+  margin: 0;
+  padding: 20px;
+  border-radius: 32px;
+  background-color: transparent;
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #1a237e;
+  cursor: pointer;
+}
+
+.date-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+  color: #1a237e;
+}
+
+.calorie-gauge {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  margin: 0 auto 20px;
+}
+
+.circular-chart {
+  display: block;
+  margin: 10px auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: #e6ebf5;
+  stroke-width: 2.5;
+}
+
+.circle {
+  fill: none;
+  stroke: #1a237e;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dasharray 1.5s ease-out;
+}
+
+.gauge-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.kalan {
+  font-size: 14px;
+  color: #1a237e;
+  margin: 0;
+}
+
+.remaining-calories {
+  font-size: 40px;
+  font-weight: bold;
+  color: #1a237e;
+  margin: 5px 0;
+  letter-spacing: -2px;
+}
+
+.total-calories {
+  font-size: 14px;
+  color: #1a237e;
+  margin: 0;
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+.consumed-burned {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px;
+  margin-bottom: 20px;
+  color: #1e293b;
+}
+
+.eaten-info, .burned-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.macros-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.macro-card {
+  background: rgba(255,255,255,0.85);
+  padding: 14px 12px 12px;
+  border-radius: 18px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+
+.macro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.macro-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.macro-icons {
+    display: flex;
+    gap: 3px;
+    font-size: 16px;
+}
+
+.macro-values {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-family: monospace;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 5px;
+  background-color: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1.5s ease-out;
+}
+
+.protein-fill {
+  background-color: #8b2252;
+}
+
+.carbs-fill {
+  background-color: #1e3a8a;
+}
+
+.fat-fill {
+  background: linear-gradient(90deg, #d97706, #fbbf24);
+}
+
+.dark .macro-card {
+  background: rgba(30, 41, 59, 0.7);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.2);
+}
+
+.dark .kalan, .dark .total-calories, .dark .nav-button, .dark .date-info, .dark .eaten-info, .dark .burned-info, .dark .macro-header h3 {
+   color: #e2e8f0;
+}
+
+.dark .remaining-calories {
+    color: #ffffff;
+}
+
+.dark .circle-bg {
+    stroke: #334155;
+}
+
+.dark .circle {
+    stroke: #818cf8;
+}
+
+.dark .progress-bar-bg {
+    background-color: #334155;
+}
