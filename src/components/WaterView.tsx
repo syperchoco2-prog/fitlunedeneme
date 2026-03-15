@@ -60,8 +60,8 @@ export default function WaterView() {
     };
 
     return (
-        <div className="flex-1 bg-zinc-50 flex flex-col min-h-screen">
-            <header className="px-6 pt-12 pb-4 bg-white border-b border-zinc-100 shrink-0">
+        <div className="flex-1 flex flex-col min-h-screen" style={{ background: 'linear-gradient(160deg, #e8eaf8 0%, #dce5f5 40%, #e0e8f8 70%, #d8e2f5 100%)' }}>
+            <header className="px-6 pt-12 pb-4 bg-white/80 backdrop-blur-sm border-b border-white/60 shrink-0">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Su Takibi</h1>
                     <button
@@ -124,6 +124,15 @@ export default function WaterView() {
                             <span className="text-xs font-bold text-zinc-700">1.0 L</span>
                             <span className="text-[10px] text-zinc-400">Büyük Şişe</span>
                         </motion.button>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => addWater(1.5)}
+                            className="flex flex-col items-center justify-center bg-white border border-blue-100 p-3 rounded-2xl shadow-sm hover:bg-blue-50 transition-colors flex-1"
+                        >
+                            <span className="text-2xl mb-1">🧊</span>
+                            <span className="text-xs font-bold text-zinc-700">1.5 L</span>
+                            <span className="text-[10px] text-zinc-400">Matara</span>
+                        </motion.button>
                     </div>
 
                     {/* Geri Al Butonu */}
@@ -142,7 +151,7 @@ export default function WaterView() {
             </header>
 
             <div className="px-5 pt-6 space-y-5 pb-28">
-                <div className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
+                <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-white/60">
                     <h3 className="text-sm font-bold text-zinc-900 mb-4">{getMonthLabel(selectedDate)} İlerlemesi</h3>
                     <div className="grid grid-cols-7 gap-y-4 gap-x-2 text-center">
                         {['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pa'].map(d => (

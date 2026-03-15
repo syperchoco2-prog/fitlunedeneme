@@ -1,29 +1,11 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, X, Sparkles, CheckCircle, AlertCircle, RotateCcw, Upload, Info, Target, Cpu, Flame } from 'lucide-react';
+import { Camera, X, Sparkles, CheckCircle, AlertCircle, RotateCcw, Upload, Info, Flame, Dumbbell, Droplet, Leaf, Wheat } from 'lucide-react';
 import { analyzeFood, fileToBase64, analysisToMeal, type FoodAnalysisResult } from '../utils/geminiService';
 import { useApp } from '../context/AppContext';
 import { getMealsForDate } from '../utils/helpers';
 
 // ─── Yardımcı Bileşenler ───────────────────────────────────────────────────────
-function ScannerLine() {
-    return (
-        <>
-            <motion.div
-                className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_15px_3px_rgba(255,255,255,0.8)] z-10"
-                initial={{ top: '0%' }}
-                animate={{ top: ['0%', '100%', '0%'] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
-            />
-            <motion.div
-                className="absolute left-0 right-0 h-48 bg-gradient-to-b from-transparent to-white/20"
-                initial={{ top: '-12rem' }}
-                animate={{ top: ['0%', '100%', '0%'] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
-            />
-        </>
-    );
-}
 
 function CornerDecor({ position }: { position: 'tl' | 'tr' | 'bl' | 'br' }) {
     const base = 'absolute w-12 h-12 border-white pointer-events-none z-20';
@@ -58,6 +40,92 @@ function ConfidenceBadge({ guven }: { guven?: string }) {
     );
 }
 
+// Floating AI detection pill
+function DetectionLabel({ label, x, y, delay }: { label: string; x: string; y: string; delay: number }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: [0, 1, 1, 0], scale: [0.7, 1, 1, 0.8] }}
+            transition={{ duration: 2.8, delay, times: [0, 0.15, 0.75, 1], repeat: Infinity, repeatDelay: 1.2 }}
+            className="absolute bg-black/70 backdrop-blur-sm border border-white/20 rounded-full px-2.5 py-1 text-white text-[10px] font-bold whitespace-nowrap shadow-lg z-30"
+            style={{ left: x, top: y }}
+        >
+            {label}
+        </motion.div>
+    );
+}
+
+// Simulated object detection rectangle
+function BoundingBox({ x, y, w, h, delay }: { x: string; y: string; w: string; h: string; delay: number }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.7, 0.7, 0] }}
+            transition={{ duration: 2.4, delay, times: [0, 0.2, 0.8, 1], repeat: Infinity, repeatDelay: 1.6 }}
+            className="absolute border border-white/50 rounded-md pointer-events-none z-20"
+            style={{ left: x, top: y, width: w, height: h }}
+        />
+    );
+}
+
+// Animated typing dots
+function AnimatedDots() {
+    return (
+        <span className="inline-flex gap-[3px] ml-0.5 mb-0.5">
+            {[0, 1, 2].map(i => (
+                <motion.span
+                    key={i}
+                    animate={{ opacity: [0.2, 1, 0.2] }}
+                    transition={{ duration: 1.2, delay: i * 0.3, repeat: Infinity }}
+                    className="inline-block w-1 h-1 rounded-full bg-white align-middle"
+                />
+            ))}
+        </span>
+    );
+}
+
+// Full-screen modern scanner overlay
+function FullScreenScanOverlay() {
+
+    return (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {/* Subtle dark tint */}
+            <div className="absolute inset-0 bg-black/25 z-10" />
+
+            {/* Scanning line */}
+            <motion.div
+                className="absolute left-0 right-0 h-[2px] z-20"
+                style={{
+                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 30%, white 50%, rgba(255,255,255,0.9) 70%, transparent 100%)',
+                    boxShadow: '0 0 12px 4px rgba(255,255,255,0.6), 0 0 30px 10px rgba(180,220,255,0.3)',
+                }}
+                initial={{ top: '2%' }}
+                animate={{ top: ['2%', '96%'] }}
+                transition={{ duration: 3.5, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse', repeatDelay: 0.3 }}
+            />
+
+            {/* Glow trail below scanning line */}
+            <motion.div
+                className="absolute left-0 right-0 h-20 z-[19] pointer-events-none"
+                style={{ background: 'linear-gradient(to bottom, rgba(200,230,255,0.15) 0%, transparent 100%)' }}
+                initial={{ top: '2%' }}
+                animate={{ top: ['2%', '96%'] }}
+                transition={{ duration: 3.5, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse', repeatDelay: 0.3 }}
+            />
+
+            {/* Bounding boxes */}
+            <BoundingBox x="12%" y="20%" w="38%" h="28%" delay={0.6} />
+            <BoundingBox x="48%" y="44%" w="34%" h="24%" delay={1.4} />
+
+            {/* Detection labels */}
+            <DetectionLabel label="🌾 Karbonhidrat" x="8%"  y="18%" delay={0.4} />
+            <DetectionLabel label="🥩 Protein"      x="52%" y="30%" delay={1.1} />
+            <DetectionLabel label="🫒 Yağ"          x="10%" y="62%" delay={1.8} />
+            <DetectionLabel label="🔥 Kalori"       x="50%" y="70%" delay={2.5} />
+        </div>
+    );
+}
+
 export interface AIScannerModalProps {
     open: boolean;
     onClose: () => void;
@@ -70,28 +138,23 @@ export default function AIScannerModal({ open, onClose }: AIScannerModalProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
 
-    // Standart Scanner State
+    // State
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [analyzing, setAnalyzing] = useState(false);
     const [photoConfirmed, setPhotoConfirmed] = useState(false);
     const [result, setResult] = useState<FoodAnalysisResult | null>(null);
     const [error, setError] = useState<string | null>(null);
-
-    // Camera Stream States
     const [cameraError, setCameraError] = useState<string | null>(null);
 
-    // Review Edit State
+    // Review edit state
     const [editName, setEditName] = useState('');
     const [editCalories, setEditCalories] = useState<number | ''>('');
     const [editMealType, setEditMealType] = useState('Atıştırmalık');
+    const [showMealTypeSheet, setShowMealTypeSheet] = useState(false);
 
-    // Mantıklı Seçenekleri Belirleme
+    // Time-based meal options
     const currentHour = new Date().getHours();
-    // Sabah < 11 (Kahvaltı, AraÖğün)
-    // Öğle 11 - 16 (Öğle Yemeği, Ara Öğün)
-    // Akşam 16 - 22 (Akşam Yemeği, Ara Öğün)
-    // Gece > 22 (Atıştırmalık)
     const mealOptions = React.useMemo(() => {
         if (currentHour < 11) return ['Kahvaltı', 'Atıştırmalık'];
         if (currentHour < 16) return ['Öğle Yemeği', 'Atıştırmalık'];
@@ -99,7 +162,7 @@ export default function AIScannerModal({ open, onClose }: AIScannerModalProps) {
         return ['Atıştırmalık'];
     }, [currentHour]);
 
-    // Modal kapandığında state'i sıfırla
+    // Reset state when modal closes
     useEffect(() => {
         if (!open) {
             setTimeout(() => {
@@ -109,6 +172,7 @@ export default function AIScannerModal({ open, onClose }: AIScannerModalProps) {
                 setError(null);
                 setAnalyzing(false);
                 setPhotoConfirmed(false);
+                setShowMealTypeSheet(false);
                 if (fileInputRef.current) fileInputRef.current.value = '';
             }, 300);
         }
@@ -146,7 +210,6 @@ export default function AIScannerModal({ open, onClose }: AIScannerModalProps) {
         return () => stopCamera();
     }, [open, previewUrl, result]);
 
-    // Fotoğraf Kamerasından Canlı Çekim
     const capturePhoto = () => {
         if (videoRef.current && canvasRef.current) {
             const video = videoRef.current;
@@ -168,16 +231,14 @@ export default function AIScannerModal({ open, onClose }: AIScannerModalProps) {
         }
     };
 
-    // Fotoğraf Seçimi (Galeri)
     const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
         setResult(null);
         setError(null);
         setSelectedFile(file);
         setPreviewUrl(URL.createObjectURL(file));
-        setPhotoConfirmed(false); // require explicit confirm
+        setPhotoConfirmed(false);
     }, []);
 
     const handleRetake = () => {
@@ -206,6 +267,7 @@ export default function AIScannerModal({ open, onClose }: AIScannerModalProps) {
             if (!analysis.tanindi) {
                 setError('Yemek tam olarak tanınamadı. Lütfen daha net bir açıdan fotoğraf çekin.');
                 setAnalyzing(false);
+                setPhotoConfirmed(false);
                 return;
             }
 
@@ -213,7 +275,6 @@ export default function AIScannerModal({ open, onClose }: AIScannerModalProps) {
             setEditName(analysis.yemekAdi || '');
             setEditCalories(analysis.kalori || 0);
 
-            // Default öğün türünü saatin durumuna/yapay zeka kararına göre eşitle
             if (analysis.ogunTuru && mealOptions.includes(analysis.ogunTuru)) {
                 setEditMealType(analysis.ogunTuru);
             } else {
@@ -222,18 +283,19 @@ export default function AIScannerModal({ open, onClose }: AIScannerModalProps) {
         } catch (err) {
             console.error(err);
             setError('AI bağlantısı kurulamadı. Lütfen API anahtarını veya bağlantınızı kontrol edin.');
+            setPhotoConfirmed(false);
         } finally {
             setAnalyzing(false);
         }
     };
 
-    // Bağlam Öğün Hatırlatmaları (Reminders)
+    // Missing meal reminders
     const todayMeals = React.useMemo(() => getMealsForDate(state.meals, state.selectedDate), [state.meals, state.selectedDate]);
     const hasBreakfast = todayMeals.some(m => m.name === 'Kahvaltı');
     const hasLunch = todayMeals.some(m => m.name === 'Öğle Yemeği');
     const hasDinner = todayMeals.some(m => m.name === 'Akşam Yemeği');
 
-    let missingMealReminder = null;
+    let missingMealReminder: string | null = null;
     if (result) {
         if (currentHour < 12 && !hasBreakfast) {
             missingMealReminder = "Günaydın! Henüz kahvaltı girmediniz, bu öğün kahvaltınız olabilir mi?";
@@ -244,21 +306,37 @@ export default function AIScannerModal({ open, onClose }: AIScannerModalProps) {
         }
     }
 
-    const handleSaveMeal = () => {
+    const handleSaveWithMealType = (mealType: string) => {
         if (!result) return;
-
-        // Yeni Meal objesini oluştur
         const cals = typeof editCalories === 'number' ? editCalories : 0;
         const finalMeal = analysisToMeal({
             ...result,
             yemekAdi: editName,
             kalori: cals,
-            ogunTuru: editMealType as any,
+            ogunTuru: mealType as 'Kahvaltı' | 'Öğle Yemeği' | 'Akşam Yemeği' | 'Atıştırmalık',
         }, state.selectedDate);
 
         dispatch({ type: 'ADD_MEAL', payload: finalMeal });
         showToast(`${editName} eklendi — ${cals} kcal`, 'success');
         onClose();
+    };
+
+    // Macro ratio bar helper
+    const macroRatioBar = () => {
+        if (!result) return null;
+        const p = result.protein ?? 0;
+        const c = result.karbonhidrat ?? 0;
+        const f = result.yag ?? 0;
+        const lif = result.lif ?? 0;
+        const total = p + c + f + lif || 1;
+        return (
+            <div className="w-full h-1.5 rounded-full overflow-hidden flex">
+                <div className="h-full bg-blue-400 transition-all"   style={{ width: `${(p / total) * 100}%` }} />
+                <div className="h-full bg-orange-400 transition-all" style={{ width: `${(c / total) * 100}%` }} />
+                <div className="h-full bg-amber-400 transition-all"  style={{ width: `${(f / total) * 100}%` }} />
+                <div className="h-full bg-purple-400 transition-all" style={{ width: `${(lif / total) * 100}%` }} />
+            </div>
+        );
     };
 
     return (
@@ -271,337 +349,392 @@ export default function AIScannerModal({ open, onClose }: AIScannerModalProps) {
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-[100] flex flex-col items-center justify-start sm:justify-center overflow-y-auto overflow-x-hidden bg-black/90"
                 >
-                {/* Kapat Butonu (Sürekli Görünecek ve Şeffaf Olacak) */}
-                <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={onClose}
-                    className="absolute top-6 right-6 z-[110] w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white backdrop-blur-md shadow-lg"
-                >
-                    <X size={20} />
-                </motion.button>
+                    {/* Kapat Butonu */}
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={onClose}
+                        className="absolute top-6 right-6 z-[110] w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white backdrop-blur-md shadow-lg"
+                    >
+                        <X size={20} />
+                    </motion.button>
 
-                {/* Ana Konteyner (Strict bounds) */}
-                <div className="w-full sm:max-w-[400px] flex flex-col relative h-full sm:h-[800px] sm:max-h-[90vh] bg-black sm:rounded-[2.5rem] overflow-hidden sm:shadow-2xl">
+                    {/* Ana Konteyner */}
+                    <div className="w-full sm:max-w-[400px] flex flex-col relative h-full sm:h-[800px] sm:max-h-[90vh] bg-black sm:rounded-[2.5rem] overflow-hidden sm:shadow-2xl">
 
-                    {!result ? (
-                        /* KAMERA VE TARAMA MODU (Unified) */
-                        <div className="flex-1 w-full flex flex-col relative bg-black overflow-hidden">
-                            {/* Arka Plan: Kamera Video VEYA Seçilen Resim */}
-                            {!previewUrl && !cameraError ? (
-                                <video
-                                    ref={videoRef}
-                                    autoPlay
-                                    playsInline
-                                    muted
-                                    className="absolute inset-0 w-full h-full object-cover z-0"
+                        {!result ? (
+                            /* KAMERA VE TARAMA MODU */
+                            <div className="flex-1 w-full flex flex-col relative bg-black overflow-hidden">
+                                {/* Arka Plan: Kamera veya Seçilen Resim */}
+                                {!previewUrl && !cameraError ? (
+                                    <video
+                                        ref={videoRef}
+                                        autoPlay
+                                        playsInline
+                                        muted
+                                        className="absolute inset-0 w-full h-full object-cover z-0"
+                                    />
+                                ) : previewUrl ? (
+                                    <img
+                                        src={previewUrl}
+                                        alt="Önizleme"
+                                        className="absolute inset-0 w-full h-full object-cover z-0"
+                                    />
+                                ) : null}
+
+                                <canvas ref={canvasRef} className="hidden" />
+
+                                {/* Full-screen analiz animasyonu (fotoğraf üstünde) */}
+                                <AnimatePresence>
+                                    {photoConfirmed && analyzing && (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.4 }}
+                                            className="absolute inset-0 z-30"
+                                        >
+                                            <FullScreenScanOverlay />
+
+                                            {/* Alt status pill */}
+                                            <div className="absolute bottom-0 left-0 right-0 pb-14 px-6 flex flex-col items-center gap-2 z-40">
+                                                <div className="bg-black/60 backdrop-blur-md rounded-full px-5 py-2.5 flex items-center gap-2 border border-white/10">
+                                                    <motion.div
+                                                        animate={{ opacity: [0.5, 1, 0.5] }}
+                                                        transition={{ duration: 1.5, repeat: Infinity }}
+                                                        className="w-1.5 h-1.5 rounded-full bg-cyan-400"
+                                                    />
+                                                    <span className="text-white font-bold text-sm tracking-wide">
+                                                        AI Analiz Ediyor
+                                                    </span>
+                                                    <AnimatedDots />
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                {/* Viewfinder Overlay (sadece analiz etmiyorken) */}
+                                <AnimatePresence>
+                                    {!photoConfirmed && (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            className="w-full flex-1 relative z-10 flex flex-col items-center"
+                                        >
+                                            {/* Viewfinder */}
+                                            <div className="flex-1 flex items-center justify-center w-full">
+                                                <div className="w-[85vw] h-[85vw] max-w-[340px] max-h-[340px] relative transition-all duration-500">
+                                                    {/* Karartma maskesi */}
+                                                    <div className="absolute inset-0 rounded-3xl border border-white/40 bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] z-0 pointer-events-none" />
+                                                    <CornerDecor position="tl" />
+                                                    <CornerDecor position="tr" />
+                                                    <CornerDecor position="bl" />
+                                                    <CornerDecor position="br" />
+                                                </div>
+                                            </div>
+
+                                            {/* Alt Kontroller */}
+                                            {!previewUrl ? (
+                                                /* Kamera çekim kontrolleri */
+                                                <div className="w-full shrink-0">
+                                                    <div className="text-center px-6 mb-6 max-w-[300px] mx-auto">
+                                                        <p className="text-white font-bold text-lg mb-1 tracking-wide drop-shadow-md">
+                                                            Öğününüzü Çerçeveleyin
+                                                        </p>
+                                                        <p className="text-white/80 text-sm font-medium drop-shadow-md">
+                                                            {cameraError ? cameraError : "Hedefi tam ortaladığınızdan emin olun"}
+                                                        </p>
+                                                    </div>
+                                                    <div className="w-full px-6 pb-10 pt-6 bg-gradient-to-t from-black via-black/80 to-transparent flex justify-center items-center gap-8">
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.9 }}
+                                                            onClick={() => fileInputRef.current?.click()}
+                                                            className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg"
+                                                        >
+                                                            <Upload size={20} />
+                                                        </motion.button>
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.9 }}
+                                                            onClick={cameraError ? () => fileInputRef.current?.click() : capturePhoto}
+                                                            className="w-20 h-20 bg-transparent rounded-full flex items-center justify-center border-[4px] border-white shadow-lg"
+                                                        >
+                                                            <div className="w-[66px] h-[66px] bg-white rounded-full transition-transform active:scale-95" />
+                                                        </motion.button>
+                                                        <div className="w-14 h-14" />
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                /* Slim floating action bar (fotoğraf onay) */
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 24 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ type: 'spring', stiffness: 340, damping: 28 }}
+                                                    className="w-full shrink-0 px-5 pb-10 pt-4"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.88 }}
+                                                            onClick={handleRetake}
+                                                            className="w-12 h-12 rounded-full bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-lg shrink-0"
+                                                        >
+                                                            <RotateCcw size={18} />
+                                                        </motion.button>
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.97 }}
+                                                            onClick={handleConfirmAndAnalyze}
+                                                            className="flex-1 h-12 bg-white rounded-full flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(255,255,255,0.25)] font-black text-base text-black"
+                                                        >
+                                                            <Sparkles size={17} className="text-black" />
+                                                            Analiz Et
+                                                        </motion.button>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                {/* Hata Durumu */}
+                                <AnimatePresence>
+                                    {error && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0 }}
+                                            className="absolute top-20 left-6 right-6 flex items-center justify-center gap-3 bg-red-500/90 backdrop-blur-md border border-red-500/30 rounded-2xl px-4 py-3 shadow-xl z-50 text-white font-medium text-sm text-center"
+                                        >
+                                            <AlertCircle size={20} className="flex-shrink-0" />
+                                            <p>{error}</p>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                {/* Hidden input */}
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="hidden"
                                 />
-                            ) : previewUrl ? (
-                                <img
-                                    src={previewUrl}
-                                    alt="Önizleme"
-                                    className="absolute inset-0 w-full h-full object-cover z-0"
-                                />
-                            ) : null}
+                            </div>
 
-                            <canvas ref={canvasRef} className="hidden" />
-
-                            {/* Üst Karartma ve Odak Alanı Overlay */}
+                        ) : (
+                            /* ==========================================================
+                               SONUÇ (REVIEW) EKRANI
+                               ========================================================== */
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="w-full flex-1 relative z-10 flex flex-col items-center"
+                                className="flex-1 w-full flex flex-col relative pb-10 overflow-y-auto"
+                                style={{ background: 'linear-gradient(160deg, #e8eaf8 0%, #dce5f5 40%, #e0e8f8 70%, #d8e2f8 100%)' }}
                             >
-                                {/* Viewfinder üstten uygun boşlukla yerleşir, ekranın ortasına doğru */}
-                                <div className="flex-1 flex items-center justify-center w-full">
-                                    {/* Orta Kutu (Viewfinder / Analyzer) */}
-                                    <div className="w-72 h-72 relative transition-all duration-500">
-                                        {/* Karartma Maskesi */}
-                                        <div className="absolute inset-0 rounded-3xl border border-white/40 bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] z-0 pointer-events-none" />
-
-                                        {!photoConfirmed && (
-                                            <>
-                                                <CornerDecor position="tl" />
-                                                <CornerDecor position="tr" />
-                                                <CornerDecor position="bl" />
-                                                <CornerDecor position="br" />
-                                            </>
-                                        )}
-
-                                        {/* Analyzing Animasyonu "Kutunun İçi" */}
-                                        <AnimatePresence>
-                                            {photoConfirmed && (
-                                                <motion.div
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    exit={{ opacity: 0 }}
-                                                    className="absolute inset-0 bg-black/60 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center z-20 overflow-hidden border border-white/10"
-                                                >
-                                                    <div className="absolute inset-0 overflow-hidden mix-blend-overlay opacity-80 z-0 pointer-events-none">
-                                                        <ScannerLine />
-                                                    </div>
-
-                                                    <div className="relative w-24 h-24 flex items-center justify-center z-10 mb-4">
-                                                        <motion.div
-                                                            animate={{ rotate: 360 }}
-                                                            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-                                                            className="absolute inset-0 rounded-full border border-white/20 border-t-white"
-                                                        />
-                                                        <motion.div
-                                                            animate={{ rotate: -360 }}
-                                                            transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-                                                            className="absolute inset-2 rounded-full border border-white/10 border-b-white/50 border-l-white/50"
-                                                        />
-                                                        <Cpu size={28} className="text-white drop-shadow-lg relative z-10" />
-                                                    </div>
-
-                                                    <motion.h3
-                                                        animate={{ opacity: [0.6, 1, 0.6] }}
-                                                        transition={{ duration: 2, repeat: Infinity }}
-                                                        className="text-white font-black text-center text-lg tracking-wide drop-shadow-md px-2"
-                                                    >
-                                                        FitLune AI<br />Analiz Ediyor
-                                                    </motion.h3>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                </div>
-
-                                {/* Alt Kontroller - mt-auto ile her zaman en alta yapışır */}
-                                {!previewUrl ? (
-                                    /* Kamera Çekim Kontrolleri */
-                                    <div className="w-full shrink-0">
-                                        <div className="text-center px-6 mb-6 max-w-[300px] mx-auto">
-                                            <p className="text-white font-bold text-lg mb-1 tracking-wide drop-shadow-md">
-                                                Öğününüzü Çerçeveleyin
-                                            </p>
-                                            <p className="text-white/80 text-sm font-medium drop-shadow-md">
-                                                {cameraError ? cameraError : "Hedefi tam ortaladığınızdan emin olun"}
-                                            </p>
-                                        </div>
-
-                                        <div className="w-full px-6 pb-10 pt-6 bg-gradient-to-t from-black via-black/80 to-transparent flex justify-center items-center gap-8">
-                                            <motion.button
-                                                whileTap={{ scale: 0.9 }}
-                                                onClick={() => fileInputRef.current?.click()}
-                                                className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg"
-                                            >
-                                                <Upload size={20} />
-                                            </motion.button>
-
-                                            <motion.button
-                                                whileTap={{ scale: 0.9 }}
-                                                onClick={cameraError ? () => fileInputRef.current?.click() : capturePhoto}
-                                                className="w-20 h-20 bg-transparent rounded-full flex items-center justify-center border-[4px] border-white shadow-lg"
-                                            >
-                                                <div className="w-[66px] h-[66px] bg-white rounded-full transition-transform active:scale-95" />
-                                            </motion.button>
-
-                                            <div className="w-14 h-14" />
-                                        </div>
-                                    </div>
-                                ) : !photoConfirmed ? (
-                                    /* Fotoğraf Onay Kontrolleri */
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="w-full shrink-0 bg-black/70 backdrop-blur-2xl px-6 py-6 pb-10 rounded-t-[2rem] border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col items-center"
-                                    >
-                                        <h3 className="text-white text-xl font-black mb-1 text-center">Resmi Onaylıyor Musunuz?</h3>
-                                        <p className="text-zinc-400 text-xs font-medium mb-5 text-center">Görüntü netse analizi başlatabilirsiniz.</p>
-
-                                        <div className="flex flex-col w-full gap-3">
-                                            <motion.button
-                                                whileTap={{ scale: 0.98 }}
-                                                onClick={handleConfirmAndAnalyze}
-                                                className="w-full py-4 bg-white text-black font-black text-lg rounded-[1.25rem] shadow-[0_0_20px_rgba(255,255,255,0.3)] flex justify-center items-center gap-2"
-                                            >
-                                                <Sparkles size={20} className="text-black" /> Analiz Et
-                                            </motion.button>
-                                            <motion.button
-                                                whileTap={{ scale: 0.98 }}
-                                                onClick={handleRetake}
-                                                className="w-full py-4 bg-white/10 rounded-[1.25rem] text-white font-semibold text-lg hover:bg-white/20 transition-colors border border-white/10"
-                                            >
-                                                Yeniden Çek
-                                            </motion.button>
-                                        </div>
-                                    </motion.div>
-                                ) : null}
-
-                            </motion.div>
-
-                            {/* Hata Durumu Overlay */}
-                            <AnimatePresence>
-                                {error && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0 }}
-                                        className="absolute top-20 left-6 right-6 flex items-center justify-center gap-3 bg-red-500/90 backdrop-blur-md border border-red-500/30 rounded-2xl px-4 py-3 shadow-xl z-50 text-white font-medium text-sm text-center"
-                                    >
-                                        <AlertCircle size={20} className="flex-shrink-0" />
-                                        <p>{error}</p>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    ) : (
-                        /* ==========================================================
-                           İNCELEME (REVIEW) EKRANI - Tam Ekran Sunum
-                           ========================================================== */
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex-1 w-full flex flex-col bg-zinc-50 dark:bg-zinc-950 relative pb-10 overflow-y-auto transition-colors"
-                        >
-                            {/* Küçültülmüş resim header - Tam Genişlik Ekran Tepesi */}
-                            <div className="relative w-full h-[45vh] max-h-[400px] shrink-0">
-                                <img src={previewUrl!} className="w-full h-full object-cover" />
-                                {/* Bottom Gradient for blending into the white card */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-zinc-50 dark:from-zinc-950 via-zinc-900/30 to-black/50 transition-colors" />
-
-                                <div className="absolute bottom-6 left-5 right-5 flex items-end justify-between z-10">
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-5xl drop-shadow-xl">{result.emoji}</span>
-                                            <div className="flex flex-col">
+                                {/* Fotoğraf header — yemek adı overlay */}
+                                <div className="relative w-full h-[42vh] max-h-[360px] shrink-0">
+                                    <img src={previewUrl!} className="w-full h-full object-cover" />
+                                    <div
+                                        className="absolute inset-0"
+                                        style={{ background: 'linear-gradient(to top, #dce5f5 0%, rgba(220,229,245,0.55) 30%, rgba(0,0,0,0.45) 80%, rgba(0,0,0,0.15) 100%)' }}
+                                    />
+                                    <div className="absolute bottom-4 left-5 right-5 z-10 flex items-end justify-between">
+                                        <div className="flex-1 mr-3">
+                                            <h1 className="text-white font-black text-2xl leading-tight drop-shadow-lg line-clamp-2">
+                                                {editName || result.yemekAdi}
+                                            </h1>
+                                            <div className="mt-1.5">
                                                 <ConfidenceBadge guven={result.guven} />
                                             </div>
                                         </div>
+                                        <motion.button
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={handleRetake}
+                                            className="bg-black/40 backdrop-blur-md p-2.5 rounded-full border border-white/20 shadow-lg shrink-0"
+                                        >
+                                            <RotateCcw size={18} className="text-white" />
+                                        </motion.button>
                                     </div>
-                                    <motion.button
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={handleRetake}
-                                        className="bg-zinc-900/50 backdrop-blur-md p-3 rounded-full border border-white/20 shadow-lg mb-2"
-                                    >
-                                        <RotateCcw size={20} className="text-white" />
-                                    </motion.button>
                                 </div>
-                            </div>
 
-                            {/* Düzenlenebilir İçerik Kartı - Ekranın alt yarısından başlar */}
-                            <div className="px-5 -mt-4 relative z-20 flex flex-col gap-4">
-                                {/* İsim ve Kalori Düzenleme */}
-                                <div className="space-y-4">
+                                {/* İçerik kartları */}
+                                <div className="px-5 -mt-4 relative z-20 flex flex-col gap-4">
+
+                                    {/* Yemek adı düzenleme */}
                                     <div>
-                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 mb-1 block">Yemek Adı</label>
+                                        <label className="text-[10px] font-bold text-[#15224a]/50 uppercase tracking-widest pl-1 mb-1 block">Yemek Adı</label>
                                         <input
                                             value={editName}
                                             onChange={(e) => setEditName(e.target.value)}
-                                            className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-4 py-3 rounded-xl text-zinc-900 dark:text-white font-bold text-base focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all"
+                                            className="w-full bg-white/70 border border-white/60 backdrop-blur-sm px-4 py-3 rounded-2xl text-[#15224a] font-bold text-base focus:ring-2 focus:ring-[#15224a]/20 focus:outline-none shadow-sm"
                                         />
                                     </div>
+
+                                    {/* Kalori hero kartı */}
                                     <div>
-                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1 mb-1 block">Hesaplanan Kalori (kcal)</label>
-                                        <div className="relative">
-                                            <input
-                                                type="number"
-                                                value={editCalories}
-                                                onChange={(e) => setEditCalories(e.target.value === '' ? '' : Number(e.target.value))}
-                                                className="w-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 px-4 py-3 rounded-xl text-emerald-800 dark:text-emerald-400 font-black text-xl flex items-center focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all"
-                                            />
-                                            <Flame className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500" size={20} />
+                                        <label className="text-[10px] font-bold text-[#15224a]/50 uppercase tracking-widest pl-1 mb-1.5 block">Kalori</label>
+                                        <div
+                                            className="bg-white/80 backdrop-blur-sm border border-white/60 rounded-3xl px-5 py-4 shadow-sm"
+                                            style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(232,234,248,0.8) 100%)' }}
+                                        >
+                                            <div className="flex items-end gap-2">
+                                                <input
+                                                    type="number"
+                                                    value={editCalories}
+                                                    onChange={(e) => setEditCalories(e.target.value === '' ? '' : Number(e.target.value))}
+                                                    className="bg-transparent text-[#15224a] font-black leading-none focus:outline-none w-full"
+                                                    style={{ fontSize: '48px', letterSpacing: '-2px' }}
+                                                />
+                                                <div className="flex flex-col items-end pb-1.5 shrink-0">
+                                                    <span className="text-sm font-bold text-[#15224a]/50 leading-none">kcal</span>
+                                                    <Flame size={16} className="text-orange-400 mt-1" />
+                                                </div>
+                                            </div>
+                                            <p className="text-[11px] text-[#15224a]/40 font-medium mt-1">Dokunarak düzenleyebilirsiniz</p>
                                         </div>
                                     </div>
 
-                                    {/* Makrolar Gösterimi (Salt Okunur) */}
-                                    <div className="grid grid-cols-4 gap-2">
-                                        <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl p-2 text-center transition-colors">
-                                            <p className="text-xs font-black text-blue-500">{result.protein}g</p>
-                                            <p className="text-[9px] text-zinc-400 font-bold uppercase mt-0.5">Protein</p>
-                                        </div>
-                                        <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl p-2 text-center transition-colors">
-                                            <p className="text-xs font-black text-orange-500">{result.karbonhidrat}g</p>
-                                            <p className="text-[9px] text-zinc-400 font-bold uppercase mt-0.5">Karb</p>
-                                        </div>
-                                        <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl p-2 text-center transition-colors">
-                                            <p className="text-xs font-black text-amber-500">{result.yag}g</p>
-                                            <p className="text-[9px] text-zinc-400 font-bold uppercase mt-0.5">Yağ</p>
-                                        </div>
-                                        <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl p-2 text-center transition-colors">
-                                            <p className="text-xs font-black text-purple-500">{result.lif || 0}g</p>
-                                            <p className="text-[9px] text-zinc-400 font-bold uppercase mt-0.5">Lif</p>
+                                    {/* Makro oranı çubuğu + kartlar */}
+                                    <div className="flex flex-col gap-2.5">
+                                        {macroRatioBar()}
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {[
+                                                { icon: Dumbbell, value: result.protein ?? 0,       label: 'Protein', color: 'text-blue-500',   bg: 'bg-blue-50/80',   border: 'border-blue-100/60' },
+                                                { icon: Wheat,    value: result.karbonhidrat ?? 0,   label: 'Karb',    color: 'text-orange-500', bg: 'bg-orange-50/80', border: 'border-orange-100/60' },
+                                                { icon: Droplet,  value: result.yag ?? 0,            label: 'Yağ',     color: 'text-amber-500',  bg: 'bg-amber-50/80',  border: 'border-amber-100/60' },
+                                                { icon: Leaf,     value: result.lif ?? 0,            label: 'Lif',     color: 'text-purple-500', bg: 'bg-purple-50/80', border: 'border-purple-100/60' },
+                                            ].map(({ icon: Icon, value, label, color, bg, border }) => (
+                                                <div
+                                                    key={label}
+                                                    className={`${bg} border ${border} backdrop-blur-sm rounded-2xl p-2.5 flex flex-col items-center gap-1.5`}
+                                                >
+                                                    <Icon size={14} className={color} />
+                                                    <p className={`text-sm font-black ${color}`}>{value}g</p>
+                                                    <p className="text-[9px] text-[#15224a]/50 font-bold uppercase tracking-wide">{label}</p>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="h-px bg-zinc-200/50 dark:bg-zinc-800/50 w-full rounded-full transition-colors" />
+                                    <div className="h-px bg-[#15224a]/10 w-full rounded-full" />
 
-                                {/* Diyetisyen Yorumu */}
-                                {result.diyetisyenYorumu && (
-                                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800/30 p-5 rounded-2xl relative shadow-sm transition-colors">
-                                        <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
-                                            <Sparkles size={40} className="text-blue-500" />
-                                        </div>
-                                        <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">👩‍⚕️ Diyetisyen Notu</h3>
-                                        <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 leading-relaxed relative z-10">
-                                            "{result.diyetisyenYorumu}"
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Öğün Seçimi - Geri Dönüşümlü Mantık */}
-                                <div className="bg-white dark:bg-zinc-900 p-5 rounded-3xl shadow-sm border border-zinc-100 dark:border-zinc-800 transition-colors">
-                                    <div className="flex justify-between items-center mb-3">
-                                        <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Öğün Tipi Seçin</h3>
-                                    </div>
-
-                                    {missingMealReminder && (
-                                        <div className="flex gap-2 items-center bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 p-3 rounded-xl mb-4 transition-colors">
-                                            <Info size={16} className="text-amber-500 shrink-0" />
-                                            <p className="text-xs font-semibold text-amber-800 dark:text-amber-400 leading-tight">
-                                                {missingMealReminder}
-                                            </p>
+                                    {/* Beslenme Önerisi (Diyetisyen Notu) */}
+                                    {result.diyetisyenYorumu && (
+                                        <div className="bg-white/80 backdrop-blur-sm border border-white/60 rounded-2xl p-4 shadow-sm flex gap-3">
+                                            <div className="w-0.5 shrink-0 rounded-full self-stretch" style={{ background: 'linear-gradient(to bottom, #34d399, #6366f1)' }} />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-1.5 mb-1.5">
+                                                    <Sparkles size={13} className="text-indigo-500 shrink-0" />
+                                                    <h3 className="text-[10px] font-bold text-[#15224a]/60 uppercase tracking-widest">
+                                                        Beslenme Önerisi
+                                                    </h3>
+                                                </div>
+                                                <p className="text-sm font-medium text-[#15224a]/80 leading-relaxed">
+                                                    {result.diyetisyenYorumu}
+                                                </p>
+                                            </div>
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {mealOptions.map(opt => (
-                                            <button
-                                                key={opt}
-                                                onClick={() => setEditMealType(opt)}
-                                                className={`py-3 px-2 rounded-xl text-sm font-bold transition-all border ${editMealType === opt
-                                                    ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20'
-                                                    : 'bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700'
-                                                    }`}
+                                    {/* Tespit Edilen İçerik */}
+                                    {(result.icerikAdetleri || result.porsiyon) && (
+                                        <div className="px-1 text-center">
+                                            <p className="text-[10px] font-bold text-[#15224a]/40 uppercase tracking-wider mb-1">Tespit Edilen İçerik</p>
+                                            <p className="text-xs font-medium text-[#15224a]/50">
+                                                {result.icerikAdetleri || result.porsiyon}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Aksiyon Butonları */}
+                                <div className="px-5 mt-auto pt-6 pb-2">
+                                    <button
+                                        onClick={() => setShowMealTypeSheet(true)}
+                                        className="w-full py-4 bg-[#15224a] rounded-[1.25rem] text-white font-black text-lg shadow-xl shadow-[#15224a]/20 active:scale-[0.98] transition-all flex justify-center items-center gap-2"
+                                    >
+                                        <CheckCircle size={22} /> Öğünü Kaydet
+                                    </button>
+                                    <button
+                                        onClick={onClose}
+                                        className="w-full mt-3 py-3 text-[#15224a]/50 font-bold text-sm tracking-wide bg-transparent rounded-2xl active:bg-[#15224a]/5 transition-colors"
+                                    >
+                                        İptal Et
+                                    </button>
+                                </div>
+
+                                {/* Öğün Tipi Bottom Sheet */}
+                                <AnimatePresence>
+                                    {showMealTypeSheet && (
+                                        <>
+                                            {/* Backdrop */}
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                className="absolute inset-0 z-[120] bg-black/40 backdrop-blur-sm"
+                                                onClick={() => setShowMealTypeSheet(false)}
+                                            />
+
+                                            {/* Sheet panel */}
+                                            <motion.div
+                                                initial={{ y: '100%' }}
+                                                animate={{ y: 0 }}
+                                                exit={{ y: '100%' }}
+                                                transition={{ type: 'spring', stiffness: 400, damping: 36 }}
+                                                className="absolute bottom-0 left-0 right-0 z-[130] rounded-t-[2rem] bg-white px-5 pb-10 pt-5 shadow-2xl"
                                             >
-                                                {opt}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                                {/* Pull handle */}
+                                                <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-zinc-200" />
 
-                                {/* İçerik ve Porsiyon (Minik Detay) */}
-                                <div className="px-1 text-center mt-2">
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 flex flex-col items-center gap-1">
-                                        <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Tespit Edilen İçerik</span>
-                                        {result.icerikAdetleri || result.porsiyon || "Otomatik Yemek Analizi"}
-                                    </p>
-                                </div>
-                            </div>
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h2 className="text-lg font-black text-[#15224a]">Öğün Tipi</h2>
+                                                    <button
+                                                        onClick={() => setShowMealTypeSheet(false)}
+                                                        className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500"
+                                                    >
+                                                        <X size={16} />
+                                                    </button>
+                                                </div>
 
-                            {/* Aksiyon Butonları (Sabit Alt Bar İzlenimi) */}
-                            <div className="px-5 mt-auto pt-6 pb-2">
-                                <button
-                                    onClick={handleSaveMeal}
-                                    className="w-full py-4 bg-zinc-900 dark:bg-white rounded-[1.25rem] text-white dark:text-zinc-900 font-black text-lg shadow-xl shadow-zinc-900/20 dark:shadow-white/10 active:scale-[0.98] transition-all flex justify-center items-center gap-2"
-                                >
-                                    <CheckCircle size={22} /> Öğünü Kaydet
-                                </button>
-                                <button
-                                    onClick={onClose}
-                                    className="w-full mt-3 py-3 text-zinc-500 dark:text-zinc-400 font-bold text-sm tracking-wide bg-transparent rounded-2xl active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors"
-                                >
-                                    İptal Et
-                                </button>
-                            </div>
+                                                {missingMealReminder && (
+                                                    <div className="flex gap-2 items-center bg-amber-50 border border-amber-100 p-3 rounded-2xl mb-4">
+                                                        <Info size={15} className="text-amber-500 shrink-0" />
+                                                        <p className="text-xs font-semibold text-amber-800 leading-tight">
+                                                            {missingMealReminder}
+                                                        </p>
+                                                    </div>
+                                                )}
 
-                        </motion.div>
-                    )}
+                                                <div className="flex flex-col gap-2.5">
+                                                    {mealOptions.map(opt => (
+                                                        <motion.button
+                                                            key={opt}
+                                                            whileTap={{ scale: 0.97 }}
+                                                            onClick={() => {
+                                                                setEditMealType(opt);
+                                                                handleSaveWithMealType(opt);
+                                                            }}
+                                                            className="w-full py-4 px-5 rounded-2xl bg-[#15224a]/5 border border-[#15224a]/10 text-[#15224a] font-bold text-base text-left hover:bg-[#15224a]/10 transition-colors flex items-center justify-between"
+                                                        >
+                                                            <span>{opt}</span>
+                                                            {result?.ogunTuru === opt && (
+                                                                <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded-full">
+                                                                    AI Önerisi
+                                                                </span>
+                                                            )}
+                                                        </motion.button>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        </>
+                                    )}
+                                </AnimatePresence>
 
-                </div>
-            </motion.div>
+                            </motion.div>
+                        )}
+
+                    </div>
+                </motion.div>
             )}
         </AnimatePresence>
     );

@@ -174,10 +174,10 @@ export default function CaloriesView({
   return (
     <>
       {/* ───── Ana İçerik ───────────────────────────────────── */}
-      <div className="flex-1 bg-zinc-50 dark:bg-zinc-950 flex flex-col min-h-screen pb-24 transition-colors">
+      <div className="flex-1 dark:bg-zinc-950 flex flex-col min-h-screen pb-24 transition-colors" style={{ background: 'linear-gradient(160deg, #e8eaf8 0%, #dce5f5 40%, #e0e8f8 70%, #d8e2f5 100%)' }}>
 
         {/* Header + Tarih Seçici */}
-        <header className="px-6 pt-12 pb-4 bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 shrink-0 transition-colors">
+        <header className="px-6 pt-12 pb-4 bg-white/80 dark:bg-zinc-900 backdrop-blur-sm border-b border-white/60 dark:border-zinc-800 shrink-0 transition-colors">
           <div className="flex justify-between items-center mb-5">
             <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight transition-colors">Kalori</h1>
             <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl px-3 py-1.5 transition-colors">
@@ -223,7 +223,7 @@ export default function CaloriesView({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm border border-zinc-100 dark:border-zinc-800 transition-colors"
+            className="bg-white/80 dark:bg-zinc-900 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-white/60 dark:border-zinc-800 transition-colors"
           >
             <div className="flex items-center justify-between">
               {/* Halka */}
@@ -366,7 +366,7 @@ export default function CaloriesView({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm border border-zinc-100 dark:border-zinc-800 transition-colors"
+            className="bg-white/80 dark:bg-zinc-900 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-white/60 dark:border-zinc-800 transition-colors"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-black text-zinc-900 dark:text-white transition-colors">Öğünler</h3>

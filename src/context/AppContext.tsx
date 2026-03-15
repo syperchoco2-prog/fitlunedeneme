@@ -205,13 +205,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
     }, [state.appSettings.darkMode]);
 
-    // Toast helper
+    // Toast helper — max 2 toast, aynı tipte varsa güncelle
     const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+        const existingSameType = state.toasts.find(t => t.type === type);
+        if (existingSameType) {
+            dispatch({ type: 'REMOVE_TOAST', payload: existingSameType.id });
+        }
+        // Max 2 toast sınırı — en eskiyi sil
+        const currentToasts = state.toasts.filter(t => t.id !== existingSameType?.id);
+        if (currentToasts.length >= 2) {
+            dispatch({ type: 'REMOVE_TOAST', payload: currentToasts[0].id });
+        }
         const id = generateId();
         dispatch({ type: 'ADD_TOAST', payload: { id, message, type } });
         setTimeout(() => {
             dispatch({ type: 'REMOVE_TOAST', payload: id });
-        }, 3000);
+        }, 2000);
     };
 
     return (

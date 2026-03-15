@@ -73,9 +73,9 @@ export default function ActivityView() {
     const totalBurned = todayWorkouts.reduce((sum, w) => sum + w.calories, 0) + Math.floor(todaySteps * 0.04);
 
     return (
-        <div className="flex-1 flex flex-col bg-zinc-50 dark:bg-zinc-950 pb-28 min-h-full relative overflow-hidden transition-colors">
+        <div className="flex-1 flex flex-col dark:bg-zinc-950 pb-28 min-h-full relative overflow-hidden transition-colors" style={{ background: 'linear-gradient(160deg, #e8eaf8 0%, #dce5f5 40%, #e0e8f8 70%, #d8e2f5 100%)' }}>
             {/* Header */}
-            <header className="px-6 pt-12 pb-6 bg-white dark:bg-zinc-900 shrink-0 rounded-b-[2rem] shadow-sm z-10 sticky top-0 transition-colors">
+            <header className="px-6 pt-12 pb-6 bg-white/80 dark:bg-zinc-900 backdrop-blur-sm shrink-0 rounded-b-[2rem] shadow-sm z-10 sticky top-0 transition-colors">
                 <div className="flex justify-between items-center">
                     <div>
                         <span className="text-zinc-400 dark:text-zinc-500 font-bold text-[10px] uppercase tracking-widest transition-colors">{selectedDate === getTodayStr() ? 'Bugün' : selectedDate}</span>
@@ -93,7 +93,7 @@ export default function ActivityView() {
             <div className="px-5 pt-6 space-y-6 overflow-y-auto">
 
                 {/* Aylık Adım ve Mesafe Grafiği Şablonu */}
-                <section className="bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-sm border border-zinc-100 dark:border-zinc-800 transition-colors">
+                <section className="bg-white/80 dark:bg-zinc-900 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-white/60 dark:border-zinc-800 transition-colors">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-tight transition-colors">Aylık İlerleme</h3>
                         <span className="text-xs font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-lg transition-colors">Mart 2026</span>
@@ -124,7 +124,7 @@ export default function ActivityView() {
                 </section>
 
                 {/* Adımsayar (Step Counter) */}
-                <section className="bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-sm border border-zinc-100 dark:border-zinc-800 transition-colors">
+                <section className="bg-white/80 dark:bg-zinc-900 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-white/60 dark:border-zinc-800 transition-colors">
                     <div className="flex justify-between items-end mb-4">
                         <div>
                             <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 transition-colors">

@@ -34,11 +34,12 @@ function ProfileSettingsPage({ onBack, key }: { onBack: () => void; key?: string
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 300, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="flex-1 bg-zinc-50 dark:bg-zinc-950 flex flex-col min-h-screen pb-28 absolute inset-0 z-50 overflow-hidden transition-colors"
+            className="flex-1 dark:bg-zinc-950 flex flex-col min-h-screen pb-28 absolute inset-0 z-50 overflow-hidden transition-colors"
+            style={{ background: 'linear-gradient(160deg, #e8eaf8 0%, #dce5f5 40%, #e0e8f8 70%, #d8e2f5 100%)' }}
         >
-            <header className="px-6 pt-12 pb-4 bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 shrink-0 sticky top-0 z-10 transition-colors">
+            <header className="px-6 pt-12 pb-4 bg-white/80 dark:bg-zinc-900 backdrop-blur-sm border-b border-white/60 dark:border-zinc-800 shrink-0 sticky top-0 z-10 transition-colors">
                 <div className="flex items-center gap-3">
-                    <button onClick={onBack} className="w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">
+                    <button onClick={onBack} className="w-10 h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 transition-colors">
                         <ChevronLeft size={20} />
                     </button>
                     <h1 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">Profil Ayarları</h1>
@@ -194,11 +195,12 @@ function HealthInfoPage({ onBack, key }: { onBack: () => void; key?: string }) {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 300, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="flex-1 bg-zinc-50 dark:bg-zinc-950 flex flex-col min-h-screen pb-28 absolute inset-0 z-50 overflow-hidden transition-colors"
+            className="flex-1 dark:bg-zinc-950 flex flex-col min-h-screen pb-28 absolute inset-0 z-50 overflow-hidden transition-colors"
+            style={{ background: 'linear-gradient(160deg, #e8eaf8 0%, #dce5f5 40%, #e0e8f8 70%, #d8e2f5 100%)' }}
         >
-            <header className="px-6 pt-12 pb-4 bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 shrink-0 sticky top-0 z-10 transition-colors">
+            <header className="px-6 pt-12 pb-4 bg-white/80 dark:bg-zinc-900 backdrop-blur-sm border-b border-white/60 dark:border-zinc-800 shrink-0 sticky top-0 z-10 transition-colors">
                 <div className="flex items-center gap-3">
-                    <button onClick={onBack} className="w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">
+                    <button onClick={onBack} className="w-10 h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 transition-colors">
                         <ChevronLeft size={20} />
                     </button>
                     <h1 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">Sağlık Bilgileri</h1>
@@ -346,18 +348,19 @@ function NotificationsPage({ onBack, key }: { onBack: () => void; key?: string }
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 300, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="flex-1 bg-zinc-50 dark:bg-zinc-950 flex flex-col min-h-screen pb-28 absolute inset-0 z-50 transition-colors"
+            className="flex-1 dark:bg-zinc-950 flex flex-col min-h-screen pb-28 absolute inset-0 z-50 transition-colors"
+            style={{ background: 'linear-gradient(160deg, #e8eaf8 0%, #dce5f5 40%, #e0e8f8 70%, #d8e2f5 100%)' }}
         >
-            <header className="px-6 pt-12 pb-4 bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 shrink-0 transition-colors">
+            <header className="px-6 pt-12 pb-4 bg-white/80 dark:bg-zinc-900 backdrop-blur-sm border-b border-white/60 dark:border-zinc-800 shrink-0 transition-colors">
                 <div className="flex items-center gap-3">
-                    <button onClick={onBack} className="w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">
+                    <button onClick={onBack} className="w-10 h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 transition-colors">
                         <ChevronLeft size={20} />
                     </button>
                     <h1 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">Bildirimler</h1>
                 </div>
             </header>
             <div className="px-6 pt-6">
-                <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm border border-zinc-100 dark:border-zinc-800 transition-colors relative z-0">
+                <div className="bg-white/80 dark:bg-zinc-900 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-white/60 dark:border-zinc-800 transition-colors relative z-0">
                     <ToggleRow label="Bildirimler" desc="Tüm bildirimleri aç/kapat" value={appSettings.notificationsEnabled} onToggle={() => toggleSetting('notificationsEnabled')} />
                     <ToggleRow label="Su Hatırlatıcısı" desc="Düzenli su içme hatırlatması" value={appSettings.waterReminder} onToggle={() => toggleSetting('waterReminder')} />
                     <ToggleRow label="Öğün Hatırlatıcısı" desc="Öğün kaydetme hatırlatması" value={appSettings.mealReminder} onToggle={() => toggleSetting('mealReminder')} />
@@ -385,11 +388,12 @@ function ThemePage({ onBack, key }: { onBack: () => void; key?: string }) {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 300, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="flex-1 bg-zinc-50 dark:bg-zinc-950 flex flex-col min-h-screen pb-28 absolute inset-0 z-50 transition-colors"
+            className="flex-1 dark:bg-zinc-950 flex flex-col min-h-screen pb-28 absolute inset-0 z-50 transition-colors"
+            style={{ background: 'linear-gradient(160deg, #e8eaf8 0%, #dce5f5 40%, #e0e8f8 70%, #d8e2f5 100%)' }}
         >
-            <header className="px-6 pt-12 pb-4 bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 shrink-0 transition-colors">
+            <header className="px-6 pt-12 pb-4 bg-white/80 dark:bg-zinc-900 backdrop-blur-sm border-b border-white/60 dark:border-zinc-800 shrink-0 transition-colors">
                 <div className="flex items-center gap-3">
-                    <button onClick={onBack} className="w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">
+                    <button onClick={onBack} className="w-10 h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 transition-colors">
                         <ChevronLeft size={20} />
                     </button>
                     <h1 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">Görünüm</h1>
@@ -494,18 +498,19 @@ function PrivacyPage({ onBack, key }: { onBack: () => void; key?: string }) {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 300, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="flex-1 bg-zinc-50 dark:bg-zinc-950 flex flex-col min-h-screen pb-28 absolute inset-0 z-50 transition-colors"
+            className="flex-1 dark:bg-zinc-950 flex flex-col min-h-screen pb-28 absolute inset-0 z-50 transition-colors"
+            style={{ background: 'linear-gradient(160deg, #e8eaf8 0%, #dce5f5 40%, #e0e8f8 70%, #d8e2f5 100%)' }}
         >
-            <header className="px-6 pt-12 pb-4 bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 shrink-0 transition-colors">
+            <header className="px-6 pt-12 pb-4 bg-white/80 dark:bg-zinc-900 backdrop-blur-sm border-b border-white/60 dark:border-zinc-800 shrink-0 transition-colors">
                 <div className="flex items-center gap-3">
-                    <button onClick={onBack} className="w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">
+                    <button onClick={onBack} className="w-10 h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 transition-colors">
                         <ChevronLeft size={20} />
                     </button>
                     <h1 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">Gizlilik</h1>
                 </div>
             </header>
             <div className="px-6 pt-6">
-                <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-sm border border-zinc-100 dark:border-zinc-800 flex flex-col items-center justify-center py-12 transition-colors">
+                <div className="bg-white/80 dark:bg-zinc-900 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-white/60 dark:border-zinc-800 flex flex-col items-center justify-center py-12 transition-colors">
                     <div className="text-4xl mb-4">🔒</div>
                     <h3 className="font-bold text-zinc-900 dark:text-white text-base mb-2">Yakında</h3>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center">Gizlilik ayarları ve veri yönetimi özellikleri yakında eklenecektir.</p>
@@ -559,7 +564,7 @@ export default function ProfileView() {
     };
 
     return (
-        <div className="flex-1 bg-zinc-50 dark:bg-zinc-950 flex flex-col min-h-screen pb-24 relative overflow-hidden transition-colors">
+        <div className="flex-1 dark:bg-zinc-950 flex flex-col min-h-screen pb-24 relative overflow-hidden transition-colors" style={{ background: 'linear-gradient(160deg, #e8eaf8 0%, #dce5f5 40%, #e0e8f8 70%, #d8e2f5 100%)' }}>
             {/* Alt Sayfalar */}
             <AnimatePresence>
                 {subPage === 'profileSettings' && <ProfileSettingsPage key="profileSettings" onBack={() => setSubPage('main')} />}
@@ -570,7 +575,7 @@ export default function ProfileView() {
             </AnimatePresence>
 
             {/* Header / Cover */}
-            <div className="relative pt-12 pb-8 px-6 bg-white dark:bg-[#1E2532] shrink-0 rounded-b-[2.5rem] shadow-sm z-10 transition-colors">
+            <div className="relative pt-12 pb-8 px-6 bg-white/80 dark:bg-[#1E2532] backdrop-blur-sm shrink-0 rounded-b-[2.5rem] shadow-sm z-10 transition-colors">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">Profil</h1>
                     <button

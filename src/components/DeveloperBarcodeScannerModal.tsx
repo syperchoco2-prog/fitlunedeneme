@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   AlertCircle,
@@ -13,6 +13,7 @@ import {
 
 import type { DeveloperBarcodeCaptureResponse } from '../types';
 import { useApp } from '../context/AppContext';
+
 import { useBarcodeScannerEngine } from '../hooks/useBarcodeScannerEngine';
 import { isValidBarcode, sanitizeBarcode } from '../utils/barcodeShared';
 import {
@@ -22,10 +23,19 @@ import {
   updateDeveloperBarcodeSubmissionName,
 } from '../utils/developerBarcodeCapture';
 
+type DevToastType = 'success' | 'error' | 'info';
+
 const HOLD_MS = 900;
 const UI_WATCHDOG_TIMEOUT_MS = 6_500;
+const DEV_TOAST_DURATION_MS = 1_400;
 
-type DeveloperQueuePhase = 'scan' | 'queueing' | 'result' | 'error';
+interface DevToastState {
+  id: number;
+  message: string;
+  type: DevToastType;
+}
+
+type DeveloperQueuePhase = 'scan' | 'queueing' | 'result' | 'naming' | 'error';
 type DeveloperQueueStage = 'idle' | 'rpc_call' | 'rpc_success' | 'rpc_timeout' | 'rpc_error';
 
 interface DeveloperBarcodeScannerModalProps {
@@ -161,10 +171,22 @@ export default function DeveloperBarcodeScannerModal({
   open,
   onClose,
 }: DeveloperBarcodeScannerModalProps) {
-  const { showToast } = useApp();
+  const { showToast: _globalToast } = useApp();
   const requestIdRef = useRef(0);
   const transitionLockRef = useRef(false);
   const scanEnabledRef = useRef(true);
+  const devToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [devToast, setDevToast] = useState<DevToastState | null>(null);
+
+  const showDevToast = useCallback((message: string, type: DevToastType = 'success') => {
+    if (devToastTimerRef.current) clearTimeout(devToastTimerRef.current);
+    const id = Date.now();
+    setDevToast({ id, message, type });
+    devToastTimerRef.current = setTimeout(() => {
+      setDevToast((cur) => (cur?.id === id ? null : cur));
+      devToastTimerRef.current = null;
+    }, DEV_TOAST_DURATION_MS);
+  }, []);
 
   const [queuePhase, setQueuePhase] = useState<DeveloperQueuePhase>('scan');
   const [debugStage, setDebugStage] = useState<DeveloperQueueStage>('idle');
@@ -213,8 +235,10 @@ export default function DeveloperBarcodeScannerModal({
     onBarcodeConfirmed: (barcode) => {
       void handleDeveloperCapture(barcode);
     },
-    showToast,
+    showToast: showDevToast,
   });
+
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     scanEnabledRef.current = open && queuePhase === 'scan';
@@ -234,6 +258,8 @@ export default function DeveloperBarcodeScannerModal({
     clearDetectedBarcodeDraft();
     setManualEntryOpen(false);
     resetTracking();
+    setDevToast(null);
+    if (devToastTimerRef.current) { clearTimeout(devToastTimerRef.current); devToastTimerRef.current = null; }
   };
 
   const closeModal = () => {
@@ -323,12 +349,12 @@ export default function DeveloperBarcodeScannerModal({
 
     const trimmedValue = submissionEditor.value.trim();
     if (!trimmedValue) {
-      showToast('Lutfen urun adi veya kisa not girin.', 'error');
+      showDevToast('Lutfen urun adi veya kisa not girin.', 'error');
       return;
     }
 
     if (trimmedValue.length > 200) {
-      showToast('Urun adi 200 karakterden uzun olamaz.', 'error');
+      showDevToast('Urun adi 200 karakterden uzun olamaz.', 'error');
       return;
     }
 
@@ -347,7 +373,8 @@ export default function DeveloperBarcodeScannerModal({
         message: null,
         available: true,
       }));
-      showToast('Inceleme urun adi kaydedildi.', 'success');
+      showDevToast('Kaydedildi', 'success');
+      resetToScan();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Inceleme urun adi kaydedilemedi.';
       setSubmissionEditor((current) => ({
@@ -357,14 +384,14 @@ export default function DeveloperBarcodeScannerModal({
         message,
         available: !message.includes('ana urun listesine') && current.available,
       }));
-      showToast(message, 'error');
+      showDevToast(message, 'error');
     }
   };
 
   const handleDeveloperCapture = async (rawInput: string) => {
     const barcode = sanitizeBarcode(rawInput);
     if (!isValidBarcode(barcode)) {
-      showToast('Geçerli bir barkod girin.', 'error');
+      showDevToast('Geçerli bir barkod girin.', 'error');
       return;
     }
 
@@ -400,22 +427,26 @@ export default function DeveloperBarcodeScannerModal({
 
       setDebugStage('rpc_success');
       setResult({ barcode, payload: nextResult });
-      setQueuePhase('result');
-      if (nextResult.status === 'already_exists') {
-        setSubmissionEditor(INITIAL_SUBMISSION_EDITOR_STATE);
+
+      if (nextResult.status === 'already_exists' || nextResult.status === 'already_submitted') {
+        const msg = nextResult.status === 'already_exists'
+          ? 'Bu barkod zaten kayıtlı'
+          : 'Bu barkod zaten inceleme listesinde var';
+        showDevToast(msg, 'info');
+        navigator.vibrate?.([30, 60, 30]);
+        setQueuePhase('scan');
+        window.setTimeout(() => {
+          if (requestIdRef.current === requestId) {
+            resetToScan();
+          }
+        }, 1200);
       } else {
+        showDevToast('Developer kuyruğuna eklendi', 'success');
+        navigator.vibrate?.([35, 40, 35]);
+        setQueuePhase('naming');
         void loadSubmissionEditor(nextResult.id, barcode, requestId);
+        window.setTimeout(() => nameInputRef.current?.focus(), 350);
       }
-
-      if (nextResult.status === 'queued') {
-        showToast('Developer kuyruğuna eklendi', 'success');
-      } else if (nextResult.status === 'already_submitted') {
-        showToast('Bu barkod zaten inceleme listesinde var', 'info');
-      } else {
-        showToast('Bu barkod zaten kayıtlı', 'info');
-      }
-
-      navigator.vibrate?.(nextResult.duplicate ? [30, 60, 30] : [35, 40, 35]);
     } catch (error) {
       if (requestIdRef.current !== requestId) {
         return;
@@ -427,7 +458,7 @@ export default function DeveloperBarcodeScannerModal({
       setDebugStage(isTimeout ? 'rpc_timeout' : 'rpc_error');
       setDebugMessage(isTimeout ? 'RPC zaman aşımı veya askıda kalan istek' : message);
       setQueuePhase('error');
-      showToast(
+      showDevToast(
         isTimeout ? 'İstek takıldı, tekrar deneyin.' : message || 'Developer kuyruğuna eklenemedi.',
         'error',
       );
@@ -461,6 +492,34 @@ export default function DeveloperBarcodeScannerModal({
 
   return (
     <div className="fixed inset-0 z-[120] flex flex-col overflow-hidden bg-black">
+      <AnimatePresence>
+        {devToast && (
+          <motion.div
+            key={devToast.id}
+            initial={{ opacity: 0, y: -28, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -16, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="absolute left-1/2 top-[max(env(safe-area-inset-top),16px)] z-50 w-[320px] max-w-[88vw] -translate-x-1/2"
+          >
+            <div
+              className={`flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-lg backdrop-blur-xl ${
+                devToast.type === 'success'
+                  ? 'border-emerald-400/25 bg-emerald-500/20 text-emerald-100'
+                  : devToast.type === 'error'
+                    ? 'border-rose-400/25 bg-rose-500/20 text-rose-100'
+                    : 'border-sky-400/25 bg-sky-500/20 text-sky-100'
+              }`}
+            >
+              {devToast.type === 'success' && <CheckCircle size={18} className="shrink-0" />}
+              {devToast.type === 'error' && <AlertCircle size={18} className="shrink-0" />}
+              {devToast.type === 'info' && <AlertCircle size={18} className="shrink-0" />}
+              <span className="text-sm font-semibold">{devToast.message}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <video
         ref={videoRef}
         autoPlay
@@ -696,50 +755,6 @@ export default function DeveloperBarcodeScannerModal({
             <p className="mt-3 font-mono text-sm text-white/45">{result.barcode}</p>
           </div>
 
-          {result.payload.status !== 'already_exists' && (
-            <div className="w-full max-w-[320px] rounded-2xl border border-white/12 bg-white/10 p-4 text-left text-white backdrop-blur-2xl">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">
-                    Gecici urun adi
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-white/65">
-                    Bu alan sadece `barcode_product_submissions.product_name` icin guncellenir.
-                  </p>
-                </div>
-                {(submissionEditor.loading || submissionEditor.saving) && (
-                  <LoaderCircle size={16} className="shrink-0 animate-spin text-white/70" />
-                )}
-              </div>
-
-              <div className="mt-3 flex gap-2">
-                <input
-                  value={submissionEditor.value}
-                  onChange={(event) =>
-                    setSubmissionEditor((current) => ({
-                      ...current,
-                      value: event.target.value,
-                    }))
-                  }
-                  disabled={!submissionEditor.available || submissionEditor.loading || submissionEditor.saving}
-                  placeholder="Urun adi veya kisa not"
-                  className="min-w-0 flex-1 rounded-xl border border-white/15 bg-black/25 px-3 py-3 text-sm font-semibold text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-                <button
-                  onClick={() => void handleSubmissionNameSave()}
-                  disabled={!submissionEditor.available || submissionEditor.loading || submissionEditor.saving}
-                  className="shrink-0 rounded-xl bg-white px-4 text-sm font-black text-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Kaydet
-                </button>
-              </div>
-
-              {submissionEditor.message && (
-                <p className="mt-3 text-xs leading-relaxed text-amber-200">{submissionEditor.message}</p>
-              )}
-            </div>
-          )}
-
           <DebugPanel
             host={supabaseHost}
             stage={debugStage}
@@ -762,6 +777,79 @@ export default function DeveloperBarcodeScannerModal({
               Kapat
             </button>
           </div>
+        </motion.div>
+      )}
+
+      {queuePhase === 'naming' && result && (
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 flex flex-1 flex-col items-center justify-center gap-5 px-6"
+        >
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
+            <CheckCircle size={32} className="text-emerald-400" />
+          </div>
+
+          <div className="text-center">
+            <p className="mb-1 text-xs font-black uppercase tracking-widest text-emerald-400">
+              Kuyruğa Eklendi
+            </p>
+            <p className="font-mono text-sm text-white/50">{result.barcode}</p>
+          </div>
+
+          <div className="w-full max-w-[320px] rounded-2xl border border-white/12 bg-white/10 p-4 text-left text-white backdrop-blur-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">
+                Urun adi girin
+              </p>
+              {(submissionEditor.loading || submissionEditor.saving) && (
+                <LoaderCircle size={16} className="shrink-0 animate-spin text-white/70" />
+              )}
+            </div>
+
+            <div className="mt-3 flex gap-2">
+              <input
+                ref={nameInputRef}
+                value={submissionEditor.value}
+                onChange={(event) =>
+                  setSubmissionEditor((current) => ({
+                    ...current,
+                    value: event.target.value,
+                  }))
+                }
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                    event.preventDefault();
+                    void handleSubmissionNameSave();
+                  }
+                }}
+                disabled={!submissionEditor.available || submissionEditor.loading || submissionEditor.saving}
+                placeholder="Urun adi veya kisa not"
+                autoFocus
+                enterKeyHint="done"
+                className="min-w-0 flex-1 rounded-xl border border-white/15 bg-black/25 px-3 py-3 text-sm font-semibold text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              <button
+                onClick={() => void handleSubmissionNameSave()}
+                disabled={!submissionEditor.available || submissionEditor.loading || submissionEditor.saving}
+                className="shrink-0 rounded-xl bg-white px-4 text-sm font-black text-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Kaydet
+              </button>
+            </div>
+
+            {submissionEditor.message && (
+              <p className="mt-3 text-xs leading-relaxed text-amber-200">{submissionEditor.message}</p>
+            )}
+          </div>
+
+          <button
+            onClick={resetToScan}
+            className="flex items-center gap-2 rounded-2xl bg-white/10 px-5 py-2.5 text-sm font-bold text-white/70 backdrop-blur-lg"
+          >
+            <ScanLine size={14} />
+            Atla
+          </button>
         </motion.div>
       )}
 

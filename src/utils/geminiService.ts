@@ -3,7 +3,7 @@
 // Model: gemini-3.1-flash-lite-preview
 // ==========================================
 
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import type { Meal } from '../types';
 import { generateId, getTodayStr } from './helpers';
 
@@ -129,6 +129,7 @@ export async function analyzeFood(
             systemInstruction: SYSTEM_INSTRUCTION,
             responseMimeType: 'application/json',
             temperature: 1.0,
+            thinkingConfig: { thinkingLevel: ThinkingLevel.MEDIUM },
         },
     });
 
